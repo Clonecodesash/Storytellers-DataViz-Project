@@ -1,0 +1,49 @@
+<!-- Comparing categories page -->
+<div class="flex flex-col min-h-screen">
+    <!-- Header Section -->
+    <header class="mb-8 text-center p-6 bg-primary">
+        <a [routerLink]="['/']"
+            class="absolute top-0 left-0 p-2 rounded-br-lg text-white bg-primary-light hover:text-gray-500 font-semibold">
+            ← Home
+        </a>
+        <h1 class="text-4xl font-bold text-white mt-12 lg:mt-4 mb-6">Comparing Categories</h1>
+        <p class="text-gray-200">
+            This page provides a detailed analysis and visualization of global environmental data, focusing on various
+            categories.
+        </p>
+    </header>
+
+    <main class="flex-grow w-full bg-white p-8">
+        <div class="max-w-[85%] mx-auto">
+            <!-- Bar Graph 1 -->
+            <section class="mb-8">
+                <h2 class="text-2xl font-semibold text-secondary mb-4">Data at a glance</h2>
+                <p class="text-gray-700 mb-6">The following chart illustrates comparisons of per capita CO<sub>2</sub>
+                    emissions.
+                </p>
+                <app-barchart></app-barchart>
+            </section>
+
+            <!-- Stacked Bar Graph 2, 3 & 4 -->
+            <section class="mb-8">
+                <h2 class="text-2xl font-semibold text-secondary mb-4">Country Comparisons</h2>
+                <p class="text-gray-700 mb-4">The following charts show comparisons of per capita C0<sub>2</sub>
+                    emissions of countries in the same region.</p>
+                <app-stackedbarchart></app-stackedbarchart>
+                <app-stackedbarchartmult></app-stackedbarchartmult>
+                <app-stackedbarchart100></app-stackedbarchart100>
+            </section>
+
+            <!-- Heatmap 5 -->
+            <section class="mb-8">
+                <h2 class="text-2xl font-semibold text-secondary mb-4">C0<sub>2</sub> emissions type</h2>
+                <p class="text-gray-700 mb-4">The following heatmap shows C0<sub>2</sub> emission type by country.</p>
+                <app-heatmap></app-heatmap>
+            </section>
+        </div>
+    </main>
+
+    <footer class="bg-primary-dark text-white text-center w-full py-4 mt-8">
+        <p class="text-sm">© 2024 The Storytellers. All rights reserved.</p>
+    </footer>
+</div>

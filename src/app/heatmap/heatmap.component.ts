@@ -25,7 +25,7 @@ export class HeatmapComponent {
   }
 
   ngOnInit(): void {
-    d3.csv('/assets/dummy3.csv').then(data => {
+    d3.csv('assets/dummy3.csv').then(data => {
       this.data = data.map(d => ({
         country: d['country'],
         type: d['type'],

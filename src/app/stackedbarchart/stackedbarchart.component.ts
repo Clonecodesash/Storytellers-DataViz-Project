@@ -25,7 +25,7 @@ export class StackedbarchartComponent {
 
   ngOnInit(): void {
     this.createSvg();
-    d3.csv('/assets/dummy2.csv').then(data => {
+    d3.csv('assets/dummy2.csv').then(data => {
       this.data = data.map(d => ({
         region: d['Region'],
         country: d['Country'],

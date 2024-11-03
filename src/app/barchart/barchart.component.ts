@@ -25,7 +25,7 @@ export class BarchartComponent {
 
   ngOnInit(): void {
     this.createSvg();
-    d3.csv('/assets/dummy.csv').then(data => {
+    d3.csv('assets/dummy.csv').then(data => {
       this.data = data.map(d => ({
         country: d['Country'],
         emission: +d['Emission'],

@@ -24,7 +24,7 @@ export class HeatmapComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    d3.csv('/assets/dummy3.csv').then(data => {
+    d3.csv('assets/dummy3.csv').then(data => {
       this.data = data.map(d => ({
         country: d['country'],
         type: d['type'],
@@ -32,9 +32,8 @@ export class HeatmapComponent implements OnInit {
         emission: +d['emission']
       }));
 
-      // Get unique decades from the data
       this.availableDecades = Array.from(new Set(this.data.map(d => d.decade))).sort();
-      this.selectedDecade = this.availableDecades[0]; // Set the initial selected decade
+      this.selectedDecade = this.availableDecades[0];
 
       this.createHeatmap();
     });
@@ -55,14 +54,12 @@ export class HeatmapComponent implements OnInit {
   private setChartDimensions(): void {
     const containerWidth = document.getElementById('heatmap')?.clientWidth || 800;
     this.width = containerWidth - this.margin.left - this.margin.right;
-    this.height = 400 - this.margin.top - this.margin.bottom; // You can adjust this as needed
+    this.height = 400 - this.margin.top - this.margin.bottom;
   }
 
   private createHeatmap(): void {
-    // Clear any existing content
     d3.select('figure#heatmap').selectAll('*').remove();
 
-    // Create SVG container
     this.svg = d3.select('figure#heatmap')
       .append('svg')
       .attr('viewBox', `0 0 ${this.width + this.margin.left + this.margin.right} ${this.height + this.margin.top + this.margin.bottom}`)
@@ -71,14 +68,11 @@ export class HeatmapComponent implements OnInit {
       .append('g')
       .attr('transform', `translate(${this.margin.left},${this.margin.top})`);
 
-    // Filter data for the selected decade and limit to 10 countries
     const filteredData = this.data.filter(d => d.decade === this.selectedDecade).slice(0, 10);
 
-    // Extract unique types and countries
     const types = Array.from(new Set(filteredData.map(d => d.type)));
     const countries = Array.from(new Set(filteredData.map(d => d.country)));
 
-    // Create scales
     const x = d3.scaleBand()
       .domain(types)
       .range([0, this.width])
@@ -89,11 +83,9 @@ export class HeatmapComponent implements OnInit {
       .range([0, this.height])
       .padding(0.1);
 
-    // Create color scale
     this.colorScale = d3.scaleSequential(d3.interpolateBlues)
       .domain([0, d3.max(filteredData, d => d.emission) || 1]);
 
-    // Draw the heatmap cells
     this.svg.selectAll()
       .data(filteredData)
       .enter()
@@ -119,7 +111,6 @@ export class HeatmapComponent implements OnInit {
         tooltip.transition().duration(500).style('opacity', 0);
       });
 
-    // Tooltip
     const tooltip = d3.select('body').append('div')
       .style('position', 'absolute')
       .style('padding', '6px')
@@ -129,7 +120,6 @@ export class HeatmapComponent implements OnInit {
       .style('pointer-events', 'none')
       .style('opacity', 0);
 
-    // Add X axis
     this.svg.append('g')
       .attr('transform', `translate(0,${this.height})`)
       .call(d3.axisBottom(x).tickSize(0))
@@ -137,7 +127,6 @@ export class HeatmapComponent implements OnInit {
       .attr('transform', 'translate(0,10)')
       .style('text-anchor', 'middle');
 
-    // Add Y axis
     this.svg.append('g')
       .call(d3.axisLeft(y).tickSize(0));
   }

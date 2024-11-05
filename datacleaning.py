@@ -6,7 +6,7 @@
 import pandas as pd
 
 # Step 1: Load the data
-file_path = 'cleaned_data1.csv'  # Update this to your CSV file path
+file_path = 'cleaned_data.csv'  # Update this to your CSV file path
 df = pd.read_csv(file_path)
 
 # Step 2: Inspect the data
@@ -18,27 +18,25 @@ print(df.isnull().sum())
 df = df.apply(lambda col: col.map(lambda s: s.lower() if type(s) == str else s))
 print(df)
 
-# Step 4: Handle Missing Values
-# Drop rows where any of the emissions columns have missing values
-emissions_columns = ['emissions_including_land-use_change', 'emissions_from_land-use_change', 'Annual_emissions']
-df.dropna(subset=emissions_columns, inplace=True)
+# # Step 4: Handle Missing Values
+# # Drop rows where any of the Emission columns have missing values
+# Emission_columns = ['Emission_including_land-use_change', 'Emission_from_land-use_change', 'Annual_Emission']
+# df.dropna(subset=Emission_columns, inplace=True)
 
-#delete rows with negative values in emissions columns
-df = df[(df['emissions_including_land-use_change'] >= 0) & (df['emissions_from_land-use_change'] >= 0) & (df['Annual_emissions'] >= 0)]
+# #delete rows with negative values in Emission columns
+# df = df[(df['Emission_including_land-use_change'] >= 0) & (df['Emission_from_land-use_change'] >= 0) & (df['Annual_Emission'] >= 0)]
 
 
-df['Entity'] = df['Entity'].str.lower().str.strip()
+df['Country'] = df['Country'].str.lower().str.strip()
 
 # Step 6: Remove Specific Entities
-# Remove rows where 'Entity' contains specific substrings
-df = df[~df['Entity'].str.contains(r'asia|world|europe|africa|income|north america', regex=True)]
+# Remove rows where 'Country' contains specific substrings
+df = df[~df['Country'].str.contains(r'asia|world|europe|africa|income|north america', regex=True)]
 
 # Step 7: Aggregate Data if Necessary
-# Group by 'Entity' and 'Year', taking the mean of emissions
-df = df.groupby(['Entity', 'Year'], as_index=False).agg({
-    'emissions_including_land-use_change': 'mean',
-    'emissions_from_land-use_change': 'mean',
-    'Annual_emissions': 'mean'
+# Group by 'Country' and 'Year', taking the mean of Emission
+df = df.groupby(['Country', 'Year'], as_index=False).agg({
+    'Emission': 'mean'
 })
 
 # Step 8: Remove Duplicates
@@ -263,21 +261,21 @@ continent_mapping = {
     'zimbabwe': 'Africa'
 }
 
-df['continent'] = df['Entity'].map(continent_mapping)
+df['Region'] = df['Country'].map(continent_mapping)
 
 # Handle missing values in the 'continent' column
-df['continent'].fillna('Unknown', inplace=True)
+df['Region'].fillna('Unknown', inplace=True)
 
 # Filter by the top ten countries with high emission
 df = df[(df['Year'] >= 2017) & (df['Year'] <= 2024)]
 
 # Filter by the top ten countries with high emission
-top_ten_countries = df.groupby('Entity')['Annual_emissions'].sum().nlargest(10).index
-df = df[df['Entity'].isin(top_ten_countries)]
+top_ten_countries = df.groupby('Country')['Emission'].sum().nlargest(10).index
+df = df[df['Country'].isin(top_ten_countries)]
 
 
 # Step 10: Export Clean Data
-cleaned_file_path = 'cleaned_data1.csv'  # Specify the path for the cleaned data
+cleaned_file_path = 'cleaned_data.csv'  # Specify the path for the cleaned data
 df.to_csv(cleaned_file_path, index=False)
 
 print("Data cleaning complete. Cleaned data saved to:", cleaned_file_path)

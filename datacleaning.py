@@ -265,6 +265,17 @@ continent_mapping = {
 
 df['continent'] = df['Entity'].map(continent_mapping)
 
+# Handle missing values in the 'continent' column
+df['continent'].fillna('Unknown', inplace=True)
+
+# Filter by the top ten countries with high emission
+df = df[(df['Year'] >= 2017) & (df['Year'] <= 2024)]
+
+# Filter by the top ten countries with high emission
+top_ten_countries = df.groupby('Entity')['Annual_emissions'].sum().nlargest(10).index
+df = df[df['Entity'].isin(top_ten_countries)]
+
+
 # Step 10: Export Clean Data
 cleaned_file_path = 'cleaned_data1.csv'  # Specify the path for the cleaned data
 df.to_csv(cleaned_file_path, index=False)

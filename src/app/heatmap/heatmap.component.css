@@ -1,0 +1,16 @@
+#heatmap {
+    width: 100%;
+    max-width: 900px;
+    margin: auto;
+}
+
+svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.svg-content-responsive {
+    width: 100%;
+    height: auto;
+}

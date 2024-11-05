@@ -1,0 +1,27 @@
+Region,Country,Year,Emission
+North America,USA,2020,15.2
+North America,Canada,2020,7.1
+North America,Mexico,2020,6.5
+North America,Other,2020,3.0
+Asia,China,2020,18.1
+Asia,India,2020,8.5
+Asia,Japan,2020,5.4
+Asia,South Korea,2020,4.2
+Asia,Other,2020,2.0
+Europe,Germany,2020,9.4
+Europe,UK,2020,6.3
+Europe,France,2020,5.2
+Europe,Italy,2020,4.1
+Europe,Other,2020,2.5
+South America,Brazil,2020,5.2
+South America,Argentina,2020,3.4
+South America,Colombia,2020,2.1
+South America,Chile,2020,1.8
+South America,Other,2020,1.5
+Africa,South Africa,2020,4.8
+Africa,Nigeria,2020,2.6
+Africa,Egypt,2020,2.5
+Africa,Algeria,2020,2.3
+Africa,Other,2020,1.2
+North America,USA,2021,16.1
+North America,Canada,2021,7.3

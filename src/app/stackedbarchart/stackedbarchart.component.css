@@ -1,0 +1,14 @@
+#stackedYearSelector {
+    margin-bottom: 10px;
+}
+
+figure#stacked-bar {
+    width: 100%;
+    max-width: 1000px;
+    margin: auto;
+}
+
+svg {
+    width: 100%;
+    height: auto;
+}

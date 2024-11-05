@@ -1,0 +1,14 @@
+#stackedYearSelectorPercentage {
+    margin-bottom: 20px;
+}
+
+#stacked-bar-percentage {
+    width: 100%;
+    max-width: 1000px;
+    margin: auto;
+}
+
+svg {
+    width: 100%;
+    height: auto;
+}

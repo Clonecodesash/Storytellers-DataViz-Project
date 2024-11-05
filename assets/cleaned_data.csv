@@ -1,0 +1,61 @@
+Country,Year,Emission,Region
+australia,2017,16.82187,Australia
+australia,2018,16.627844,Australia
+australia,2019,16.398174,Australia
+australia,2020,15.453229,Australia
+australia,2021,14.914762,Australia
+australia,2022,14.985412,Australia
+bahrain,2017,22.53857,Asia
+bahrain,2018,21.943077,Asia
+bahrain,2019,25.152763,Asia
+bahrain,2020,25.310665,Asia
+bahrain,2021,26.052996,Asia
+bahrain,2022,25.672274,Asia
+brunei,2017,21.63514,Asia
+brunei,2018,21.516985,Asia
+brunei,2019,24.500765,Asia
+brunei,2020,25.1325,Asia
+brunei,2021,25.375603,Asia
+brunei,2022,23.950201,Asia
+kuwait,2017,25.046242,Asia
+kuwait,2018,24.44828,Asia
+kuwait,2019,24.519451,Asia
+kuwait,2020,22.408785,Asia
+kuwait,2021,24.301199,Asia
+kuwait,2022,25.578102,Asia
+new caledonia,2017,19.63639,Oceania
+new caledonia,2018,20.755627,Oceania
+new caledonia,2019,19.87871,Oceania
+new caledonia,2020,17.838543,Oceania
+new caledonia,2021,15.763163,Oceania
+new caledonia,2022,17.641167,Oceania
+qatar,2017,36.917397,Asia
+qatar,2018,34.50409,Asia
+qatar,2019,35.985134,Asia
+qatar,2020,37.13288,Asia
+qatar,2021,39.884155,Asia
+qatar,2022,37.601273,Asia
+saudi arabia,2017,19.912016,Asia
+saudi arabia,2018,19.615448,Asia
+saudi arabia,2019,19.737017,Asia
+saudi arabia,2020,16.967278,Asia
+saudi arabia,2021,17.564127,Asia
+saudi arabia,2022,18.197495,Asia
+sint maarten (dutch part),2017,16.876734,North America
+sint maarten (dutch part),2018,16.296774,North America
+sint maarten (dutch part),2019,16.018604,North America
+sint maarten (dutch part),2020,14.945506,North America
+sint maarten (dutch part),2021,14.263612,North America
+sint maarten (dutch part),2022,14.352394,North America
+trinidad and tobago,2017,27.267317,North America
+trinidad and tobago,2018,26.801151,North America
+trinidad and tobago,2019,26.83153,North America
+trinidad and tobago,2020,23.074036,North America
+trinidad and tobago,2021,23.289734,North America
+trinidad and tobago,2022,22.423758,North America
+united arab emirates,2017,23.432226,Asia
+united arab emirates,2018,22.896563,Asia
+united arab emirates,2019,23.834637,Asia
+united arab emirates,2020,23.34033,Asia
+united arab emirates,2021,25.333178,Asia
+united arab emirates,2022,25.833244,Asia

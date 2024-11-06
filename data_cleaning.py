@@ -518,7 +518,9 @@ df = keep_top_n_and_others_per_year(df, 'Region', 'Year', 'Population_Emission')
 
 df.drop(columns=['Code'], inplace=True)
 print(df)
-#according to region from highest total to lowest total emission
+# Sort regions by total emissions from highest to lowest
+region_totals = df.groupby('Region')['Population_Emission'].sum().sort_values(ascending=False).index
+df['Region'] = pd.Categorical(df['Region'], categories=region_totals, ordered=True)
 df = df.sort_values(['Region', 'Year', 'Population_Emission'], ascending=[True, True, False])
 #remove the others rows where the region is australia
 df = df[~((df['Region'] == 'Australia') & (df['Country'] == 'others'))]

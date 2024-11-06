@@ -4,7 +4,6 @@ import * as d3 from 'd3';
 @Component({
   selector: 'app-barchart',
   standalone: true,
-  imports: [],
   templateUrl: './barchart.component.html',
   styleUrl: './barchart.component.css'
 })
@@ -12,11 +11,12 @@ export class BarchartComponent {
   private data: any[] = [];
   private filteredData: any[] = [];
   private svg: any;
-  private margin = { top: 50, right: 30, bottom: 50, left: 60 };
+  private margin = { top: 50, right: 30, bottom: 50, left: 100 };
   private width: number;
   private height: number;
   private containerWidth = 750;
   private containerHeight = 450;
+  private countryRange = 15;
 
   constructor() {
     this.width = this.containerWidth - this.margin.left - this.margin.right;
@@ -25,15 +25,18 @@ export class BarchartComponent {
 
   ngOnInit(): void {
     this.createSvg();
-    d3.csv('assets/dummy.csv').then(data => {
+    d3.csv('assets/cleaned_data.csv').then(data => {
       this.data = data.map(d => ({
         country: d['Country'],
         emission: +d['Emission'],
-        year: +d['Year']
+        year: +d['Year'],
+        region: d['Region']
       }));
-      this.filteredData = this.data.filter(d => d.year === this.getAvailableYears()[0]);
+      this.filteredData = this.filterDataByYearRegionAndRange(this.getAvailableYears()[0], this.getAvailableRegions()[0], this.countryRange);
       this.drawBars(this.filteredData);
       this.createYearSelector();
+      this.createRegionSelector();
+      this.createRangeSelector();
     });
   }
 
@@ -56,24 +59,23 @@ export class BarchartComponent {
 
     data.sort((a, b) => b.emission - a.emission);
 
-    const x = d3.scaleBand()
-      .range([0, this.width])
+    const y = d3.scaleBand()
+      .range([0, this.height])
       .domain(data.map(d => d.country))
       .padding(0.2);
 
+    const x = d3.scaleLinear()
+      .domain([0, d3.max(data, d => d.emission) || 0])
+      .range([0, this.width]);
+
+    this.svg.append('g')
+      .call(d3.axisLeft(y))
+      .selectAll('text')
+      .style('text-anchor', 'end');
+
     this.svg.append('g')
       .attr('transform', `translate(0,${this.height})`)
-      .call(d3.axisBottom(x))
-      .selectAll('text')
-      .attr('transform', 'translate(0,10)')
-      .style('text-anchor', 'middle');
-
-    const y = d3.scaleLinear()
-      .domain([0, d3.max(data, d => d.emission) || 0])
-      .range([this.height, 0]);
-
-    this.svg.append('g')
-      .call(d3.axisLeft(y));
+      .call(d3.axisBottom(x));
 
     const tooltip = d3.select('body').append('div')
       .style('position', 'absolute')
@@ -88,11 +90,11 @@ export class BarchartComponent {
       .data(data)
       .enter()
       .append('rect')
-      .attr('x', (d: any) => x(d.country))
-      .attr('y', (d: any) => y(d.emission))
-      .attr('width', x.bandwidth())
-      .attr('height', (d: any) => this.height - y(d.emission))
-      .attr('fill', '#8772d0')
+      .attr('y', (d: any) => y(d.country))
+      .attr('x', 0)
+      .attr('height', y.bandwidth())
+      .attr('width', (d: any) => x(d.emission))
+      .attr('fill', '#1f77b4')
       .on('mouseover', (event: MouseEvent, d: any) => {
         const target = event.currentTarget as SVGRectElement;
         d3.select(target).attr('fill', '#ff7f0e');
@@ -107,7 +109,7 @@ export class BarchartComponent {
       })
       .on('mouseout', (event: MouseEvent) => {
         const target = event.currentTarget as SVGRectElement;
-        d3.select(target).attr('fill', '#8772d0');
+        d3.select(target).attr('fill', '#1f77b4');
         tooltip.transition().duration(200).style('opacity', 0);
       });
   }
@@ -119,7 +121,8 @@ export class BarchartComponent {
       .attr('id', 'barYearSelect')
       .on('change', () => {
         const selectedYear = +d3.select('#barYearSelect').property('value');
-        this.filteredData = this.data.filter(d => d.year === selectedYear);
+        const selectedRegion = d3.select('#barRegionSelect').property('value');
+        this.filteredData = this.filterDataByYearRegionAndRange(selectedYear, selectedRegion, this.countryRange);
         this.drawBars(this.filteredData);
       });
 
@@ -131,8 +134,59 @@ export class BarchartComponent {
       .attr('value', d => d);
   }
 
+  private createRegionSelector(): void {
+    const regions = this.getAvailableRegions();
+    const selector = d3.select('#barRegionSelector')
+      .append('select')
+      .attr('id', 'barRegionSelect')
+      .on('change', () => {
+        const selectedRegion = d3.select('#barRegionSelect').property('value');
+        const selectedYear = +d3.select('#barYearSelect').property('value');
+        this.filteredData = this.filterDataByYearRegionAndRange(selectedYear, selectedRegion, this.countryRange);
+        this.drawBars(this.filteredData);
+      });
+
+    selector.selectAll('option')
+      .data(regions)
+      .enter()
+      .append('option')
+      .text(d => d)
+      .attr('value', d => d);
+  }
+
+  private createRangeSelector(): void {
+    const ranges = [15, 30, 50];
+    const selector = d3.select('#barRangeSelector')
+      .append('select')
+      .attr('id', 'barRangeSelect')
+      .on('change', () => {
+        this.countryRange = +d3.select('#barRangeSelect').property('value');
+        const selectedYear = +d3.select('#barYearSelect').property('value');
+        const selectedRegion = d3.select('#barRegionSelect').property('value');
+        this.filteredData = this.filterDataByYearRegionAndRange(selectedYear, selectedRegion, this.countryRange);
+        this.drawBars(this.filteredData);
+      });
+
+    selector.selectAll('option')
+      .data(ranges)
+      .enter()
+      .append('option')
+      .text(d => `${d} countries`)
+      .attr('value', d => d);
+  }
+
+  private filterDataByYearRegionAndRange(year: number, region: string, range: number): any[] {
+    return this.data.filter(d => d.year === year && d.region === region)
+      .sort((a, b) => b.emission - a.emission)
+      .slice(0, range);
+  }
+
   private getAvailableYears(): number[] {
     return Array.from(new Set(this.data.map(d => d.year))).sort();
+  }
+
+  private getAvailableRegions(): string[] {
+    return Array.from(new Set(this.data.map(d => d.region))).sort();
   }
 
   private updateChart(): void {

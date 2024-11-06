@@ -14,7 +14,9 @@ export class Stackedbarchart100Component {
   private margin = { top: 50, right: 30, bottom: 50, left: 60 };
   private width: number;
   private height: number;
-  private colors = d3.scaleOrdinal(d3.schemeCategory10);
+  private colors = d3.scaleOrdinal()
+    .domain(['1', '2', '3', '4', '5', '6'])
+    .range(['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b']);
   private availableYears: number[] = [];
   private selectedYear!: number;
 
@@ -25,7 +27,7 @@ export class Stackedbarchart100Component {
 
   ngOnInit(): void {
     this.createSvg();
-    d3.csv('assets/dummy2.csv').then(data => {
+    d3.csv('assets/cleaned_data.csv').then(data => {
       this.data = data.map(d => ({
         region: d['Region'],
         country: d['Country'],
@@ -74,7 +76,20 @@ export class Stackedbarchart100Component {
 
   private filterAndDrawChart(year: number): void {
     const filteredData = this.data.filter(d => d.year === year);
+    this.normalizeData(filteredData);
     this.drawChart(filteredData);
+  }
+
+  private normalizeData(data: any[]): void {
+    const groupedData = d3.group(data, d => d.region);
+    groupedData.forEach(values => {
+      const total = d3.sum(values, v => v.emission);
+      values.sort((a, b) => b.emission - a.emission);
+      values.forEach((v, i) => {
+        v.rank = i + 1;
+        v.normalizedEmission = (v.emission / total) * 100;
+      });
+    });
   }
 
   private drawChart(data: any[]): void {
@@ -82,20 +97,24 @@ export class Stackedbarchart100Component {
 
     const groupedData = d3.group(data, d => d.region);
     const transformedData = Array.from(groupedData, ([region, values]) => {
-      const totalEmission = d3.sum(values, d => d.emission);
       const obj: { [key: string]: number | string } = { region };
       values.forEach(v => {
-        obj[v.country] = (v.emission / totalEmission) * 100;
+        obj[v.country] = v.normalizedEmission;
       });
       return obj;
     });
 
-    const countries = Array.from(new Set(data.map(d => d.country)));
+    const sortedCountries = Array.from(new Set(data.map(d => d.country)))
+      .sort((a, b) => {
+        const rankA = data.find(d => d.country === a)?.rank ?? Infinity;
+        const rankB = data.find(d => d.country === b)?.rank ?? Infinity;
+        return rankA - rankB;
+      });
 
     const stackData = d3.stack<{ [key: string]: number }>()
-      .keys(countries)(transformedData as { [key: string]: number }[]);
+      .keys(sortedCountries)(transformedData as { [key: string]: number }[]);
 
-    const regions = Array.from(new Set(data.map(d => d.region)));
+    const regions = Array.from(groupedData.keys());
     const x = d3.scaleBand()
       .domain(regions)
       .range([0, this.width])
@@ -111,7 +130,7 @@ export class Stackedbarchart100Component {
       .call(d3.axisBottom(x));
 
     this.svg.append('g')
-      .call(d3.axisLeft(y).tickFormat(d => `${d}%`));
+      .call(d3.axisLeft(y).ticks(10).tickFormat(d => `${d}%`));
 
     const tooltip = d3.select('body').append('div')
       .style('position', 'absolute')
@@ -127,41 +146,35 @@ export class Stackedbarchart100Component {
       .enter()
       .append('g')
       .attr('class', 'layer')
-      .style('fill', (d: { key: string; }) => this.colors(d.key))
       .selectAll('rect')
-      .data((d: any) => d)
+      .data((d: { map: (arg0: (v: any) => any) => any; key: any; }) => d.map((v: any) => ({ ...v, country: d.key })))
       .enter()
       .append('rect')
       .attr('x', (d: { data: { region: string; }; }) => x(d.data.region)!)
       .attr('y', (d: d3.NumberValue[]) => y(d[1]))
       .attr('height', (d: d3.NumberValue[]) => y(d[0]) - y(d[1]))
       .attr('width', x.bandwidth())
+      .style('fill', (d: { country: any; }) => this.colors(String(data.find(v => v.country === d.country)?.rank)))
       .on('mouseover', (event: MouseEvent, d: any) => {
         const target = event.currentTarget as SVGRectElement;
-        const parentNode = target.parentNode as SVGGElement;
-        const parentData = d3.select(parentNode).datum() as d3.Series<{ [key: string]: number }, string>;
-        const region = (d.data as any).region;
-        const country = parentData.key;
-        const percentage = (d[1] - d[0]).toFixed(2);
-
-        d3.select(target).style('opacity', 0.7);
         tooltip.transition().duration(200).style('opacity', 0.9);
         tooltip.html(
-          `<strong>Region: ${region}</strong><br>
-    Country: ${country}<br>
-    Percentage: ${percentage}%`
+          `<strong>Region: ${d.data.region}</strong><br>
+           Country: ${d.country}<br>
+           Emission: ${(d[1] - d[0]).toFixed(2)}%`
         )
           .style('left', (event.pageX + 5) + 'px')
           .style('top', (event.pageY - 28) + 'px');
+        d3.select(target).style('opacity', 0.7);
       })
       .on('mousemove', (event: MouseEvent) => {
         tooltip.style('left', (event.pageX + 5) + 'px')
           .style('top', (event.pageY - 28) + 'px');
       })
       .on('mouseout', (event: MouseEvent) => {
+        tooltip.transition().duration(500).style('opacity', 0);
         const target = event.currentTarget as SVGRectElement;
         d3.select(target).style('opacity', 1);
-        tooltip.transition().duration(500).style('opacity', 0);
       });
   }
 

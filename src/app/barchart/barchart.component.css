@@ -9,3 +9,14 @@ svg {
     height: auto;
     max-height: 700px;
 }
+
+.selectors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.selectors label {
+    margin-right: 2px;
+}

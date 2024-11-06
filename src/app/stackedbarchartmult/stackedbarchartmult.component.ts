@@ -10,21 +10,19 @@ import * as d3 from 'd3';
 })
 export class StackedbarchartmultComponent {
   private data: any[] = [];
-  private svg: any;
-  private margin = { top: 30, right: 20, bottom: 40, left: 50 };
-  private width: number;
-  private height: number;
-  private colors = d3.scaleOrdinal(d3.schemeCategory10);
-  private availableYears: number[] = [];
+  private margin = { top: 40, right: 10, bottom: 40, left: 50 };
+  private width = 100;
+  private height = 200;
   private selectedYear!: number;
+  private availableYears: number[] = [];
+  private colors = d3.scaleOrdinal()
+    .domain(['1', '2', '3', '4', '5', '6'])
+    .range(['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b']);
 
-  constructor() {
-    this.width = 250 - this.margin.left - this.margin.right; 
-    this.height = 200 - this.margin.top - this.margin.bottom;
-  }
+  constructor() { }
 
   ngOnInit(): void {
-    d3.csv('assets/dummy2.csv').then(data => {
+    d3.csv('assets/cleaned_data.csv').then(data => {
       this.data = data.map(d => ({
         region: d['Region'],
         country: d['Country'],
@@ -46,11 +44,11 @@ export class StackedbarchartmultComponent {
   }
 
   private createYearSelector(): void {
-    const selector = d3.select('#yearDropdownMultiples')
+    const selector = d3.select('#smallMultiplesYearSelector')
       .append('select')
-      .attr('id', 'yearDropdownMultiplesSelect')
+      .attr('id', 'smallMultiplesYearSelect')
       .on('change', () => {
-        this.selectedYear = +d3.select('#yearDropdownMultiplesSelect').property('value');
+        this.selectedYear = +d3.select('#smallMultiplesYearSelect').property('value');
         this.filterAndDrawCharts(this.selectedYear);
       });
 
@@ -64,97 +62,89 @@ export class StackedbarchartmultComponent {
 
   private filterAndDrawCharts(year: number): void {
     const filteredData = this.data.filter(d => d.year === year);
-    const groupedData = d3.group(filteredData, d => d.region);
-
-    const totals = Array.from(groupedData, ([region, values]) => ({
-      region,
-      total: d3.sum(values, d => d.emission)
-    })).sort((a, b) => b.total - a.total);
-
-    d3.select('#chartsContainer').selectAll('*').remove();
-
-    totals.forEach(({ region }) => {
-      const regionData = groupedData.get(region);
-      if (regionData) {
-        this.drawChart(region, regionData);
-      }
-    });
+    this.drawCharts(filteredData);
   }
 
-  private drawChart(region: string, data: any[]): void {
-    const svg = d3.select('#chartsContainer')
-      .append('div')
-      .style('display', 'inline-block')
-      .style('margin', '10px')
-      .append('svg')
-      .attr('width', this.width + this.margin.left + this.margin.right)
-      .attr('height', this.height + this.margin.top + this.margin.bottom)
-      .append('g')
-      .attr('transform', `translate(${this.margin.left},${this.margin.top})`);
+  private drawCharts(data: any[]): void {
+    d3.select('#smallMultiplesContainer').html('');
 
-    const countries = Array.from(new Set(data.map(d => d.country)));
-    const x = d3.scaleBand()
-      .domain(countries)
-      .range([0, this.width])
-      .padding(0.1);
+    const groupedData = d3.group(data, d => d.region);
 
-    const y = d3.scaleLinear()
-      .domain([0, d3.max(data, d => d.emission) || 0])
-      .nice()
-      .range([this.height, 0]);
+    groupedData.forEach((regionData, region) => {
+      regionData.sort((a, b) => b.emission - a.emission);
+      regionData.forEach((d, i) => (d.rank = i + 1));
 
-    svg.append('g')
-      .attr('transform', `translate(0,${this.height})`)
-      .call(d3.axisBottom(x))
-      .selectAll('text')
-      .attr('transform', 'rotate(-45)')
-      .style('text-anchor', 'end');
+      const container = d3.select('#smallMultiplesContainer')
+        .append('div')
+        .attr('class', 'chart-container')
+        .style('display', 'inline-block')
+        .style('margin', '20px');
 
-    svg.append('g')
-      .call(d3.axisLeft(y));
+      const svg = container.append('svg')
+        .attr('width', this.width + this.margin.left + this.margin.right)
+        .attr('height', this.height + this.margin.top + this.margin.bottom)
+        .append('g')
+        .attr('transform', `translate(${this.margin.left},${this.margin.top})`);
 
-    const tooltip = d3.select('body').append('div')
-      .style('position', 'absolute')
-      .style('padding', '6px')
-      .style('background', '#f4f4f4')
-      .style('border', '1px solid #333')
-      .style('border-radius', '4px')
-      .style('pointer-events', 'none')
-      .style('opacity', 0);
+      const y = d3.scaleBand()
+        .domain(regionData.map(d => d.country))
+        .range([0, this.height])
+        .padding(0.1);
 
-    svg.selectAll('rect')
-      .data(data)
-      .enter()
-      .append('rect')
-      .attr('x', d => x(d.country)!)
-      .attr('y', d => y(d.emission))
-      .attr('width', x.bandwidth())
-      .attr('height', d => this.height - y(d.emission))
-      .attr('fill', d => this.colors(d.country))
-      .on('mouseover', (event: MouseEvent, d: any) => {
-        const target = event.currentTarget as SVGRectElement;
-        d3.select(target).style('opacity', 0.7);
-        tooltip.transition().duration(200).style('opacity', 0.9);
-        tooltip.html(`<strong>Country: ${d.country}</strong><br>Emission: ${d.emission.toFixed(2)}`)
-          .style('left', (event.pageX + 5) + 'px')
-          .style('top', (event.pageY - 28) + 'px');
-      })
-      .on('mousemove', (event: MouseEvent) => {
-        tooltip.style('left', (event.pageX + 5) + 'px')
-          .style('top', (event.pageY - 28) + 'px');
-      })
-      .on('mouseout', (event: MouseEvent) => {
-        const target = event.currentTarget as SVGRectElement;
-        d3.select(target).style('opacity', 1);
-        tooltip.transition().duration(500).style('opacity', 0);
-      });
+      const x = d3.scaleLinear()
+        .domain([0, d3.max(regionData, d => d.emission) || 0])
+        .nice()
+        .range([0, this.width]);
 
-    svg.append('text')
-      .attr('x', this.width / 2)
-      .attr('y', -10)
-      .attr('text-anchor', 'middle')
-      .style('font-size', '14px')
-      .style('font-weight', 'bold')
-      .text(region);
+      svg.append('g')
+        .call(d3.axisLeft(y).tickSizeOuter(0));
+
+      svg.append('g')
+        .attr('transform', `translate(0,${this.height})`)
+        .call(d3.axisBottom(x));
+
+      const tooltip = d3.select('body').append('div')
+        .style('position', 'absolute')
+        .style('padding', '6px')
+        .style('background', '#f4f4f4')
+        .style('border', '1px solid #333')
+        .style('border-radius', '4px')
+        .style('pointer-events', 'none')
+        .style('opacity', 0);
+
+
+      svg.selectAll('.bar')
+        .data(regionData)
+        .enter()
+        .append('rect')
+        .attr('y', d => y(d.country)!)
+        .attr('x', 0)
+        .attr('height', y.bandwidth())
+        .attr('width', d => x(d.emission))
+        .attr('fill', d => this.colors(String(d.rank)) as string)
+        .on('mouseover', (event, d) => {
+          d3.select(event.currentTarget).style('opacity', 0.8);
+          tooltip.transition().duration(200).style('opacity', 1);
+          tooltip.html(
+            `<strong>Country:</strong> ${d.country}<br>
+            <strong>Emission:</strong> ${d.emission}<br>
+            <strong>Rank:</strong> ${d.rank}`
+          )
+            .style('left', `${event.pageX + 10}px`)
+            .style('top', `${event.pageY - 20}px`);
+        })
+        .on('mousemove', event => {
+          tooltip.style('left', `${event.pageX + 10}px`)
+            .style('top', `${event.pageY - 20}px`);
+        })
+        .on('mouseout', event => {
+          d3.select(event.currentTarget).style('opacity', 1);
+          tooltip.transition().duration(500).style('opacity', 0);
+        });
+
+      container.append('h4')
+        .style('text-align', 'center')
+        .text(region);
+    });
   }
 }

@@ -1,26 +1,10 @@
-#yearDropdownMultiples {
-    margin-bottom: 10px;
+.chart-container {
+    text-align: center;
 }
 
-#chartsContainer {
+#smallMultiplesContainer {
     display: flex;
     flex-wrap: wrap;
-}
-
-svg {
-    margin: 10px;
-}
-
-#tooltip {
-    position: absolute;
-    text-align: center;
-    width: auto;
-    height: auto;
-    padding: 8px;
-    font-size: 12px;
-    background: #f9f9f9;
-    border: 1px solid #333;
-    border-radius: 4px;
-    pointer-events: none;
-    opacity: 0;
+    justify-content: center;
+    gap: 10px;
 }

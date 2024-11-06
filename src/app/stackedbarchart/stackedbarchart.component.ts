@@ -6,7 +6,7 @@ import * as d3 from 'd3';
   standalone: true,
   imports: [],
   templateUrl: './stackedbarchart.component.html',
-  styleUrl: './stackedbarchart.component.css'
+  styleUrls: ['./stackedbarchart.component.css']
 })
 export class StackedbarchartComponent {
   private data: any[] = [];
@@ -14,7 +14,9 @@ export class StackedbarchartComponent {
   private margin = { top: 50, right: 30, bottom: 50, left: 60 };
   private width: number;
   private height: number;
-  private colors = d3.scaleOrdinal(d3.schemeCategory10);
+  private colors = d3.scaleOrdinal()
+    .domain(['1', '2', '3', '4', '5', '6'])
+    .range(['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b']);
   private availableYears: number[] = [];
   private selectedYear!: number;
 
@@ -25,7 +27,7 @@ export class StackedbarchartComponent {
 
   ngOnInit(): void {
     this.createSvg();
-    d3.csv('assets/dummy2.csv').then(data => {
+    d3.csv('assets/cleaned_data.csv').then(data => {
       this.data = data.map(d => ({
         region: d['Region'],
         country: d['Country'],
@@ -81,8 +83,11 @@ export class StackedbarchartComponent {
     this.svg.selectAll('*').remove();
 
     const groupedData = d3.group(data, d => d.region);
-
     const transformedData = Array.from(groupedData, ([region, values]) => {
+      values.sort((a, b) => b.emission - a.emission);
+      values.forEach((v, i) => {
+        v.rank = i + 1; 
+      });
       const obj: { [key: string]: number | string } = { region };
       values.forEach(v => {
         obj[v.country] = v.emission;
@@ -90,12 +95,17 @@ export class StackedbarchartComponent {
       return obj;
     });
 
-    const countries = Array.from(new Set(data.map(d => d.country)));
+    const sortedCountries = Array.from(new Set(data.map(d => d.country)))
+      .sort((a, b) => {
+        const rankA = data.find(d => d.country === a)?.rank ?? Infinity;
+        const rankB = data.find(d => d.country === b)?.rank ?? Infinity;
+        return rankA - rankB;
+      });
 
     const stackData = d3.stack<{ [key: string]: number }>()
-      .keys(countries)(transformedData as { [key: string]: number }[]);
+      .keys(sortedCountries)(transformedData as { [key: string]: number }[]);
 
-    const regions = Array.from(new Set(data.map(d => d.region)));
+    const regions = Array.from(groupedData.keys());
     const x = d3.scaleBand()
       .domain(regions)
       .range([0, this.width])
@@ -127,15 +137,18 @@ export class StackedbarchartComponent {
       .enter()
       .append('g')
       .attr('class', 'layer')
-      .style('fill', (d: { key: string; }) => this.colors(d.key))
       .selectAll('rect')
-      .data((d: any) => d)
+      .data((d: { map: (arg0: (v: any) => any) => any; key: any; }, i: any) => d.map(v => ({ ...v, country: d.key })))
       .enter()
       .append('rect')
       .attr('x', (d: { data: { region: string; }; }) => x(d.data.region)!)
       .attr('y', (d: d3.NumberValue[]) => y(d[1]))
       .attr('height', (d: d3.NumberValue[]) => y(d[0]) - y(d[1]))
       .attr('width', x.bandwidth())
+      .style('fill', (d: any) => {
+        const regionData = data.find(v => v.country === d.country && v.region === d.data.region);
+        return this.colors(String(regionData?.rank));
+      })
       .on('mouseover', (event: MouseEvent, d: any) => {
         const target = event.currentTarget as SVGRectElement;
         const parentNode = target.parentNode as SVGGElement;
@@ -148,8 +161,8 @@ export class StackedbarchartComponent {
         tooltip.transition().duration(200).style('opacity', 0.9);
         tooltip.html(
           `<strong>Region: ${region}</strong><br>
-    Country: ${country}<br>
-    Emission: ${emission}`
+          Country: ${country}<br>
+          Emission: ${emission}`
         )
           .style('left', (event.pageX + 5) + 'px')
           .style('top', (event.pageY - 28) + 'px');

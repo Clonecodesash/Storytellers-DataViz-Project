@@ -6,7 +6,7 @@
 import pandas as pd
 
 # Step 1: Load the data
-file_path = 'co2-fossil-plus-land-use.csv'  # Update this to your CSV file path
+file_path = 'co-emissions-per-capita.csv'  # Update this to your CSV file path
 df = pd.read_csv(file_path)
 
 # Step 2: Inspect the data
@@ -18,25 +18,25 @@ print(df.isnull().sum())
 df = df.apply(lambda col: col.map(lambda s: s.lower() if type(s) == str else s))
 print(df)
 
-# Step 4: Handle Missing Values
-# Drop rows where any of the Emission columns have missing values
-Emission_columns = ['Emission_land_use', 'Emission_fossil_use', 'Annual_emissions']
-df.dropna(subset=Emission_columns, inplace=True)
+# # Step 4: Handle Missing Values
+# # Drop rows where any of the Emission columns have missing values
+# Emission_columns = ['Emission_land_use', 'Emission_fossil_use', 'Annual_emissions']
+# df.dropna(subset=Emission_columns, inplace=True)
 
-# Turn all negative values in Emission columns into positive values
-df['Emission_land_use'] = df['Emission_land_use'].abs()
-df['Emission_fossil_use'] = df['Emission_fossil_use'].abs()
-df['Annual_emissions'] = df['Annual_emissions'].abs()
+# # Turn all negative values in Emission columns into positive values
+# df['Emission_land_use'] = df['Emission_land_use'].abs()
+# df['Emission_fossil_use'] = df['Emission_fossil_use'].abs()
+# df['Annual_emissions'] = df['Annual_emissions'].abs()
 
-#print only the country,year,landemission and fossil fuel emission
-df = df[['Country', 'Year', 'Emission_land_use', 'Emission_fossil_use']]
+# #print only the country,year,landemission and fossil fuel emission
+# df = df[['Country', 'Year', 'Emission_land_use', 'Emission_fossil_use']]
 
 
 df['Country'] = df['Country'].str.lower().str.strip()
 
 # Step 6: Remove Specific Entities
 # Remove rows where 'Country' contains specific substrings
-df = df[~df['Country'].str.contains(r'asia|world|europe|africa|income|north america', regex=True)]
+df = df[~df['Country'].str.contains(r'asia|world|europe|africa|income|north america|south america', regex=True)]
 
 # # Step 7: Aggregate Data if Necessary
 # # Group by 'Country' and 'Year', taking the mean of Emission
@@ -486,12 +486,12 @@ population_mapping = {
 }
 
 # Map population to each country
-# df['Population'] = df['Country'].map(population_mapping)
+df['Population'] = df['Country'].map(population_mapping)
 
-# # Create a new column by multiplying population by emission
-# df['Population_Emission'] = df['Population'] * df['Emission']
+# Create a new column by multiplying population by emission
+df['Population_Emission'] = df['Population'] * df['Emission']
 
-# df['Region'] = df['Country'].map(continent_mapping)
+df['Region'] = df['Country'].map(continent_mapping)
 
 # # Handle missing values in the 'continent' column
 # df['Region'].fillna('Unknown', inplace=True)
@@ -499,24 +499,32 @@ population_mapping = {
 # Filter by the top ten countries with high emission
 df = df[(df['Year'] >= 2017) & (df['Year'] <= 2024)]
 
-# # Step 12: Keep top 5 countries in each region for each year and sum up the rest
-# def keep_top_n_and_others_per_year(df, group_col1, group_col2, sort_col, n=5):
-#     top_n = df.groupby([group_col1, group_col2]).apply(lambda x: x.nlargest(n, sort_col)).reset_index(drop=True)
-#     others = df[~df.index.isin(top_n.index)]
-#     others_sum = others.groupby([group_col1, group_col2]).agg({
-#         'Emission': 'sum',
-#         'Population': 'sum',
-#         'Population_Emission': 'sum'
-#     }).reset_index()
-#     others_sum['Country'] = 'others'
-#     return pd.concat([top_n, others_sum], ignore_index=True)
+# Step 12: Keep top 5 countries in each region for each year and sum up the rest
+def keep_top_n_and_others_per_year(df, group_col1, group_col2, sort_col, n=5):
+    top_n = df.groupby([group_col1, group_col2]).apply(lambda x: x.nlargest(n, sort_col)).reset_index(drop=True)
+    others = df[~df.index.isin(top_n.index)]
+    others_sum = others.groupby([group_col1, group_col2]).agg({
+        'Emission': 'sum',
+        'Population': 'sum',
+        'Population_Emission': 'sum'
+    }).reset_index()
+    others_sum['Country'] = 'others'
+    return pd.concat([top_n, others_sum], ignore_index=True)
 
-# df = keep_top_n_and_others_per_year(df, 'Region', 'Year', 'Population_Emission')
+df = keep_top_n_and_others_per_year(df, 'Region', 'Year', 'Population_Emission')
 
 
+# Print the DataFrame and then drop the 'Population_Emission' column
+
+df.drop(columns=['Code'], inplace=True)
+print(df)
+#according to region from highest total to lowest total emission
+df = df.sort_values(['Region', 'Year', 'Population_Emission'], ascending=[True, True, False])
+#remove the others rows where the region is australia
+df = df[~((df['Region'] == 'Australia') & (df['Country'] == 'others'))]
 
 # Step 10: Export Clean Data
-cleaned_file_path = 'cleaned_data2.csv'  # Specify the path for the cleaned data
+cleaned_file_path = 'cleaned_data1.csv'  # Specify the path for the cleaned data
 df.to_csv(cleaned_file_path, index=False)
 
 print("Data cleaning complete. Cleaned data saved to:", cleaned_file_path)

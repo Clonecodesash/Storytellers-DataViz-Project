@@ -27,12 +27,12 @@ export class Stackedbarchart100Component {
 
   ngOnInit(): void {
     this.createSvg();
-    d3.csv('assets/cleaned_data.csv').then(data => {
+    d3.csv('assets/cleaned_data1.csv').then(data => {
       this.data = data.map(d => ({
         region: d['Region'],
         country: d['Country'],
         year: +d['Year'],
-        emission: +d['Emission']
+        emission: +d['Population_Emission']
       }));
 
       this.availableYears = Array.from(new Set(this.data.map(d => d.year))).sort();
@@ -127,10 +127,10 @@ export class Stackedbarchart100Component {
 
     this.svg.append('g')
       .attr('transform', `translate(0,${this.height})`)
-      .call(d3.axisBottom(x));
+      .call(d3.axisBottom(x).tickSize(0).tickPadding(10));
 
     this.svg.append('g')
-      .call(d3.axisLeft(y).ticks(10).tickFormat(d => `${d}%`));
+      .call(d3.axisLeft(y).ticks(10).tickFormat(d => `${d}%`).tickSize(0).tickPadding(10));
 
     const tooltip = d3.select('body').append('div')
       .style('position', 'absolute')

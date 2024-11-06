@@ -1,6 +1,6 @@
 <!-- Homepage -->
 <div class="flex flex-col min-h-screen">
-    <header class="w-full bg-primary text-white py-8 px-4 text-center">
+    <header class="header w-full bg-primary text-white py-8 px-4 text-center">
         <h1 class="text-4xl font-bold">Data Visualization Project</h1>
         <p class="text-lg mt-2">The Storytellers - Team Members: Melica Omer Ali & Robert Tetteh Ashley</p>
     </header>
@@ -8,14 +8,17 @@
     <main class="flex-grow w-full mt-8 bg-white">
         <div class="max-w-[85%] mx-auto">
             <!-- Section 1 -->
-            <section class="mb-8 shadow-lg rounded-lg p-6">
+            <section class="section mb-8 shadow-lg rounded-lg p-6">
                 <a [routerLink]="['/comparing-categories']" class="block">
-                    <h2 class="text-2xl font-semibold mb-4 text-secondary">Comparing Categories</h2>
+                    <h2 class="text-2xl font-semibold mb-4 text-secondary">CO<sub>2</sub> emissions around the world
+                    </h2>
                     <p class="text-gray-700 mb-4">
-                        This section aims to analyze and visualize data related to global environmental data.
+                        This section aims to analyze and visualize data of per capita CO<sub>2</sub> emissions all
+                        around the world. It includes 5 different plots to compare the emissions of different countries and
+                        regions.
                     </p>
                     <p class="text-gray-700 mb-2">
-                        We use a dataset from different sources
+                        <b>Data Source:</b> Global Carbon Budget (2023); Population based on various sources (2023)
                     </p>
                 </a>
             </section>

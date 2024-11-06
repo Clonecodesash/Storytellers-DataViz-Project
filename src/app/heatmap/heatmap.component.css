@@ -1,16 +1,8 @@
-#heatmap {
-    width: 100%;
-    max-width: 900px;
-    margin: auto;
-}
-
-svg {
-    display: block;
+.chart-container {
     width: 100%;
     height: auto;
 }
 
-.svg-content-responsive {
-    width: 100%;
-    height: auto;
+.heatmap-year-selector .heatmap-range-selector {
+    margin-bottom: 15px;
 }

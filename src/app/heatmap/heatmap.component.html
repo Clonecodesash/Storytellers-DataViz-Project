@@ -1,6 +1,5 @@
-<div id="heatmapYearSelector">
-  <select id="decadeSelect" (change)="onDecadeChange($event)">
-    <option *ngFor="let decade of availableDecades" [value]="decade">{{ decade }}</option>
-  </select>
+<div class="flex items-center gap-4">
+  <div id="heatmapYearSelector" class="heatmap-year-selector"></div>
+  <div id="heatmapRangeSelector" class="heatmap-range-selector"></div>
 </div>
-<figure id="heatmap"></figure>
+<figure id="heatmap-chart" class="chart-container"></figure>

@@ -27,12 +27,12 @@ export class StackedbarchartComponent {
 
   ngOnInit(): void {
     this.createSvg();
-    d3.csv('assets/cleaned_data.csv').then(data => {
+    d3.csv('assets/cleaned_data1.csv').then(data => {
       this.data = data.map(d => ({
         region: d['Region'],
         country: d['Country'],
         year: +d['Year'],
-        emission: +d['Emission']
+        emission: +d['Population_Emission']
       }));
 
       this.availableYears = Array.from(new Set(this.data.map(d => d.year))).sort();
@@ -86,7 +86,7 @@ export class StackedbarchartComponent {
     const transformedData = Array.from(groupedData, ([region, values]) => {
       values.sort((a, b) => b.emission - a.emission);
       values.forEach((v, i) => {
-        v.rank = i + 1; 
+        v.rank = i + 1;
       });
       const obj: { [key: string]: number | string } = { region };
       values.forEach(v => {
@@ -99,7 +99,7 @@ export class StackedbarchartComponent {
       .sort((a, b) => {
         const rankA = data.find(d => d.country === a)?.rank ?? Infinity;
         const rankB = data.find(d => d.country === b)?.rank ?? Infinity;
-        return rankA - rankB;
+        return rankB - rankA;
       });
 
     const stackData = d3.stack<{ [key: string]: number }>()
@@ -111,17 +111,18 @@ export class StackedbarchartComponent {
       .range([0, this.width])
       .padding(0.1);
 
-    const y = d3.scaleLinear()
+    const y = d3.scalePow()
+      .exponent(0.5)
       .domain([0, d3.max(stackData, d => d3.max(d, d => d[1])) || 0])
       .nice()
       .range([this.height, 0]);
 
     this.svg.append('g')
       .attr('transform', `translate(0,${this.height})`)
-      .call(d3.axisBottom(x));
+      .call(d3.axisBottom(x).tickSize(0).tickPadding(10));
 
     this.svg.append('g')
-      .call(d3.axisLeft(y));
+      .call(d3.axisLeft(y).tickSize(0).tickPadding(10).ticks(10).tickFormat(d3.format(".2s")));
 
     const tooltip = d3.select('body').append('div')
       .style('position', 'absolute')

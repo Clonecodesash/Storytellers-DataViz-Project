@@ -69,13 +69,13 @@ export class BarchartComponent {
       .range([0, this.width]);
 
     this.svg.append('g')
-      .call(d3.axisLeft(y))
+      .call(d3.axisLeft(y).tickSize(0).tickPadding(10))
       .selectAll('text')
       .style('text-anchor', 'end');
 
     this.svg.append('g')
       .attr('transform', `translate(0,${this.height})`)
-      .call(d3.axisBottom(x));
+      .call(d3.axisBottom(x).tickSize(0).tickPadding(10));
 
     const tooltip = d3.select('body').append('div')
       .style('position', 'absolute')

@@ -1,13 +1,15 @@
-figure#bar {
+.chart-container {
     width: 100%;
-    max-width: 800px;
-    margin: auto;
+    /* max-width: 800px; */
+    height: auto;
 }
+
 
 svg {
     width: 100%;
     height: auto;
     max-height: 700px;
+    min-height: 400px;
 }
 
 .selectors {

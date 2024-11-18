@@ -51,6 +51,7 @@ export class Stackedbarchart100Component {
   private createSvg(): void {
     this.svg = d3.select('figure#stacked-bar-percentage')
       .append('svg')
+      .attr('id', 'stacked-bar-percent-svg')
       .attr('viewBox', `0 0 ${this.width + this.margin.left + this.margin.right} ${this.height + this.margin.top + this.margin.bottom}`)
       .attr('preserveAspectRatio', 'xMinYMin meet')
       .append('g')
@@ -76,6 +77,8 @@ export class Stackedbarchart100Component {
 
   private filterAndDrawChart(year: number): void {
     const filteredData = this.data.filter(d => d.year === year);
+    d3.select('#stacked-bar-percent-svg')
+    .attr('viewBox', `0 0 ${this.width + this.margin.left + this.margin.right} ${this.height + this.margin.top + this.margin.bottom}`);
     this.normalizeData(filteredData);
     this.drawChart(filteredData);
   }
@@ -182,7 +185,9 @@ export class Stackedbarchart100Component {
     const container = d3.select('figure#stacked-bar-percentage').node() as HTMLElement;
     if (container) {
       const newWidth = container.clientWidth;
-      this.width = newWidth - this.margin.left - this.margin.right;
+      const newHeight = container.clientHeight;
+      this.width = Math.max(350, newWidth - this.margin.left - this.margin.right);
+      this.height = Math.max(300, newHeight - this.margin.top - this.margin.bottom);
       this.svg.attr('viewBox', `0 0 ${this.width + this.margin.left + this.margin.right} ${this.height + this.margin.top + this.margin.bottom}`);
       this.filterAndDrawChart(this.selectedYear);
     }

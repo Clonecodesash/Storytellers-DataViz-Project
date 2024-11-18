@@ -14,13 +14,11 @@ export class BarchartComponent {
   private margin = { top: 50, right: 30, bottom: 50, left: 100 };
   private width: number;
   private height: number;
-  private containerWidth = 750;
-  private containerHeight = 450;
   private countryRange = 15;
 
   constructor() {
-    this.width = this.containerWidth - this.margin.left - this.margin.right;
-    this.height = this.containerHeight - this.margin.top - this.margin.bottom;
+    this.width = 800 - this.margin.left - this.margin.right;
+    this.height = 500 - this.margin.top - this.margin.bottom;
   }
 
   ngOnInit(): void {
@@ -48,7 +46,8 @@ export class BarchartComponent {
   private createSvg(): void {
     this.svg = d3.select('figure#bar')
       .append('svg')
-      .attr('viewBox', `0 0 ${this.containerWidth} ${this.containerHeight}`)
+      .attr('id', 'bar-svg')
+      .attr('viewBox', `0 0 ${this.width + this.margin.left + this.margin.right} ${this.height + this.margin.top + this.margin.bottom}`)
       .attr('preserveAspectRatio', 'xMinYMin meet')
       .append('g')
       .attr('transform', `translate(${this.margin.left},${this.margin.top})`);
@@ -56,6 +55,8 @@ export class BarchartComponent {
 
   private drawBars(data: any[]): void {
     this.svg.selectAll('*').remove();
+    d3.select('#bar-svg')
+    .attr('viewBox', `0 0 ${this.width + this.margin.left + this.margin.right} ${this.height + this.margin.top + this.margin.bottom}`);
 
     data.sort((a, b) => b.emission - a.emission);
 
@@ -193,8 +194,10 @@ export class BarchartComponent {
     const container = d3.select('figure#bar').node() as HTMLElement;
     if (container) {
       const newWidth = container.clientWidth;
+      const newHeight = container.clientHeight;
       this.width = newWidth - this.margin.left - this.margin.right;
-      this.svg.attr('width', newWidth);
+      this.height = Math.max(300, newHeight - this.margin.top - this.margin.bottom);
+      this.svg.attr('viewBox', `0 0 ${this.width + this.margin.left + this.margin.right} ${this.height + this.margin.top + this.margin.bottom}`);
       this.drawBars(this.filteredData);
     }
   }

@@ -155,7 +155,7 @@ export class AlluvialComponent {
       .on('mouseover', (event: { target: any; pageX: number; pageY: number; }, d: { source: { name: any; }; target: { name: any; }; value: any; }) => {
         d3.select(event.target).attr('stroke', 'orange');
         tooltip.transition().duration(200).style('opacity', 0.9);
-        tooltip.html(`<strong>Continent:</strong> ${d.source.name}<br><strong>Country:</strong> ${d.target.name}<br><strong>Emission:</strong> ${d.value}`)
+        tooltip.html(`<strong>${d.source.name} → ${d.target.name}</strong><br>Emission: ${d.value}`)
           .style('left', (event.pageX + 5) + 'px')
           .style('top', (event.pageY - 28) + 'px');
       })

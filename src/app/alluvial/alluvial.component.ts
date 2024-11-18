@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component, ElementRef, HostListener } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import * as d3 from 'd3';
@@ -6,7 +7,7 @@ import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
 @Component({
   selector: 'app-alluvial',
   standalone: true,
-  imports: [RouterModule],
+  imports: [RouterModule, CommonModule],
   templateUrl: './alluvial.component.html',
   styleUrl: './alluvial.component.css'
 })
@@ -20,6 +21,9 @@ export class AlluvialComponent {
   private margin = { top: 10, right: 10, bottom: 10, left: 10 };
   private currentIndex: number = 0;
   private years: number[] = [];
+  topNOptions: number[] = [15, 30, 50]; // Top N selector options
+  selectedTopN: number = 15; // Default top N
+  selectedYear: number = new Date().getFullYear(); // Default year
 
   constructor() {
     this.width = 800 - this.margin.left - this.margin.right;
@@ -28,7 +32,7 @@ export class AlluvialComponent {
 
   ngOnInit(): void {
     this.createSvg();
-    d3.csv('assets/emissions_data_with_years.csv').then(data => {
+    d3.csv('assets/alluvial_data.csv').then(data => {
       this.data = data.map(d => ({
         country: d['Country'],
         continent: d['Continent'],
@@ -37,8 +41,8 @@ export class AlluvialComponent {
         year: +d['Year']
       }));
       this.years = this.getAvailableYears();
-      this.filteredData = this.filterDataByYear(this.years[this.currentIndex]);
-      // this.filteredData = this.filterDataByYear(this.getAvailableYears()[0]);
+      this.selectedYear = this.years[0];
+      this.filteredData = this.getFilteredData();
       this.drawSankey(this.filteredData);
       this.createYearSelector();
     });
@@ -68,11 +72,11 @@ export class AlluvialComponent {
   private drawSankey(data: any[]): void {
     this.svg.selectAll('*').remove();
     d3.select('#sankey-svg')
-    .attr('viewBox', `0 0 ${this.width + this.margin.left + this.margin.right} ${this.height + this.margin.top + this.margin.bottom}`);
+      .attr('viewBox', `0 0 ${this.width + this.margin.left + this.margin.right} ${this.height + this.margin.top + this.margin.bottom}`);
 
     const nodes: Set<string> = new Set();
     const links: { source: any; target: any; value: any; }[] = [];
-  
+
     data.forEach(d => {
       nodes.add(d.continent);
       nodes.add(d.country);
@@ -80,12 +84,12 @@ export class AlluvialComponent {
       links.push({ source: d.country, target: 'Land Emission', value: d.emission_land });
       links.push({ source: d.country, target: 'Fossil Emission', value: d.emission_fossil });
     });
-  
+
     nodes.add('Land Emission');
     nodes.add('Fossil Emission');
-  
+
     const uniqueNodes = Array.from(nodes).map(name => ({ name }));
-  
+
     const sankeyData = {
       nodes: uniqueNodes,
       links: links.map(link => ({
@@ -94,23 +98,25 @@ export class AlluvialComponent {
         value: link.value
       }))
     };
-  
+
     // Check for missing indices
     if (sankeyData.links.some(link => link.source === -1 || link.target === -1)) {
       console.error('Missing nodes in links:', sankeyData.links.filter(link => link.source === -1 || link.target === -1));
       return;
     }
-  
+
+    this.adjustSvgHeight(data.length);
+
     this.sankeyGenerator = sankey<{ name: string }, { value: number }>()
       .nodeWidth(15)
       .nodePadding(10)
       .extent([[1, 1], [this.width - 1, this.height - 6]]);
-  
+
     const sankeyGraph = this.sankeyGenerator(sankeyData as any);
     this.svg.transition().duration(1000).ease(d3.easeCubicOut);
     this.renderSankeyGraph(sankeyGraph);
   }
-  
+
   private renderSankeyGraph(sankeyGraph: any): void {
     const nodes = this.svg.append('g')
       .selectAll('rect')
@@ -124,7 +130,7 @@ export class AlluvialComponent {
       .attr('fill', (d: any, i: number) => d3.schemeCategory10[i % 10])
       .append('title')
       .text((d: { name: any; value: any; }) => `${d.name}\n${d.value}`);
-  
+
     this.svg.append('g')
       .selectAll('text')
       .data(sankeyGraph.nodes)
@@ -136,7 +142,7 @@ export class AlluvialComponent {
       .attr('text-anchor', (d: { x0: number; }) => d.x0 < this.width / 2 ? 'start' : 'end')
       .text((d: { name: any; }) => d.name)
       .style('font-size', '12px');
-  
+
     const links = this.svg.append('g')
       .selectAll('path')
       .data(sankeyGraph.links)
@@ -161,7 +167,7 @@ export class AlluvialComponent {
         d3.select(event.target).attr('stroke', 'rgba(0, 0, 0, 0.2)');
         tooltip.transition().duration(500).style('opacity', 0);
       });
-  
+
     const tooltip = d3.select('body')
       .append('div')
       .attr('class', 'tooltip')
@@ -173,16 +179,16 @@ export class AlluvialComponent {
       .style('pointer-events', 'none')
       .style('opacity', 0);
   }
-  
+
   private createYearSelector(): void {
     const years = this.getAvailableYears();
     d3.select('#alluvialYearSelector')
       .append('select')
       .attr('id', 'alluvial-year-select')
       .on('change', () => {
-        const selectedYear = +d3.select('#alluvialYearSelector select').property('value');
-        this.currentIndex = years.indexOf(selectedYear);
-        this.filteredData = this.filterDataByYear(selectedYear);
+        this.selectedYear = +d3.select('#alluvialYearSelector select').property('value');
+        this.currentIndex = years.indexOf(this.selectedYear);
+        this.filteredData = this.getFilteredData();
         this.drawSankey(this.filteredData);
       })
       .selectAll('option')
@@ -192,8 +198,16 @@ export class AlluvialComponent {
       .text(d => d)
       .attr('value', d => d);
 
-      this.updateYearSelector();
+    this.updateYearSelector();
   }
+
+  private getFilteredData(): any[] {
+    return this.data
+      .filter(d => d.year === this.selectedYear)
+      .sort((a, b) => (b.emission_land + b.emission_fossil) - (a.emission_land + a.emission_fossil))
+      .slice(0, this.selectedTopN);
+  }
+
 
   private updateYearSelector(): void {
     const yearSelect = d3.select('#alluvial-year-select');
@@ -201,11 +215,7 @@ export class AlluvialComponent {
       yearSelect.property('value', this.years[this.currentIndex]);
     }
   }
-
-  private filterDataByYear(year: number): any[] {
-    return this.data.filter(d => d.year === year);
-  }
-
+  
   private getAvailableYears(): number[] {
     return Array.from(new Set(this.data.map(d => d.year))).sort();
   }
@@ -213,7 +223,8 @@ export class AlluvialComponent {
   private nextYear(): void {
     if (this.currentIndex < this.years.length - 1) {
       this.currentIndex++;
-      this.filteredData = this.filterDataByYear(this.years[this.currentIndex]);
+      this.selectedYear = this.years[this.currentIndex];
+      this.filteredData = this.getFilteredData();
       this.drawSankey(this.filteredData);
       this.updateYearSelector();
     }
@@ -222,7 +233,8 @@ export class AlluvialComponent {
   private previousYear(): void {
     if (this.currentIndex > 0) {
       this.currentIndex--;
-      this.filteredData = this.filterDataByYear(this.years[this.currentIndex]);
+      this.selectedYear = this.years[this.currentIndex];
+      this.filteredData = this.getFilteredData();
       this.drawSankey(this.filteredData);
       this.updateYearSelector();
     }
@@ -238,5 +250,17 @@ export class AlluvialComponent {
       this.svg.attr('viewBox', `0 0 ${this.width + this.margin.left + this.margin.right} ${this.height + this.margin.top + this.margin.bottom}`);
       this.drawSankey(this.filteredData);
     }
+  }
+
+  public onTopNSelect(event: Event): void {
+    this.selectedTopN = +(event.target as HTMLSelectElement).value;
+    this.filteredData = this.getFilteredData();
+    this.drawSankey(this.filteredData);
+  }
+
+  private adjustSvgHeight(dataLength: number): void {
+    this.height = 30 * dataLength;
+    d3.select('svg')
+      .attr('viewBox', `0 0 ${this.width + this.margin.left + this.margin.right} ${this.height + this.margin.top + this.margin.bottom}`);
   }
 }

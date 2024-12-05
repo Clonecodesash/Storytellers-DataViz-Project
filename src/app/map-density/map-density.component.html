@@ -1,0 +1,8 @@
+<div class="mb-4">
+    <label for="year-selector" class="text-gray-800">Select Year: </label>
+    <select id="year-selector" [(ngModel)]="selectedYear" (change)="onYearChange(selectedYear)" class="border px-4 py-2">
+      <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+    </select>
+  </div>
+<div class="map-container"></div>
+<div class="map-container2"></div>

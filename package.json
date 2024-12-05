@@ -21,6 +21,7 @@
     "d3": "^7.9.0",
     "d3-sankey": "^0.12.3",
     "rxjs": "~7.8.0",
+    "topojson-client": "^3.1.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.10"
   },
@@ -31,6 +32,8 @@
     "@types/d3": "^7.4.3",
     "@types/d3-sankey": "^0.12.4",
     "@types/jasmine": "~5.1.0",
+    "@types/node": "^22.10.1",
+    "@types/topojson-client": "^3.1.5",
     "angular-cli-ghpages": "^2.0.3",
     "autoprefixer": "^10.4.20",
     "jasmine-core": "~5.2.0",

@@ -1,0 +1,15 @@
+.cartogram-container {
+    width: 100%;
+    height: auto;
+    margin: auto;
+  }
+  
+  .year-selector {
+    margin: 20px;
+  }
+  
+  #year-select {
+    padding: 5px;
+    font-size: 16px;
+  }
+  

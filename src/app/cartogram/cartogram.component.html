@@ -1,0 +1,7 @@
+<div class="year-selector">
+  <label for="year-select">Select Year:</label>
+  <select id="year-select" [(ngModel)]="selectedYear" (change)="onYearChange(selectedYear)">
+    <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+  </select>
+</div>
+<div class="cartogram-container"></div>

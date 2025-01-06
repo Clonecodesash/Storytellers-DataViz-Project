@@ -1,0 +1,23 @@
+.chart-container {
+    width: 100%;
+    height: auto;
+  }
+  
+  svg {
+    font-size: 12px;
+  }
+  
+  .line {
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .dot {
+    stroke: #fff;
+    stroke-width: 1.5px;
+  }
+  
+  .tooltip {
+    font-size: 12px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+  }
+  

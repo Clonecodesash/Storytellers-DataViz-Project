@@ -80,7 +80,7 @@ export class AlluvialComponent {
     data.forEach(d => {
       nodes.add(d.continent);
       nodes.add(d.country);
-      links.push({ source: d.continent, target: d.country, value: d.emission_land });
+      links.push({ source: d.continent, target: d.country, value: d.emission_land + d.emission_fossil });
       links.push({ source: d.country, target: 'Land Emission', value: d.emission_land });
       links.push({ source: d.country, target: 'Fossil Emission', value: d.emission_fossil });
     });

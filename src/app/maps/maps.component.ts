@@ -23,8 +23,8 @@ export class MapsComponent {
   private svg: any;
   private svg2: any;
   private data: any[] = [];
-  public years: number[] = []; 
-  public selectedYear: number = 2017; 
+  public years: number[] = [];
+  public selectedYear: number = 2017;
 
   constructor(private elementRef: ElementRef) { }
 
@@ -42,7 +42,6 @@ export class MapsComponent {
   private updateMapSize(): void {
     const containerWidth = this.svg.node()?.getBoundingClientRect().width || 2000;
     const containerHeight = this.svg.node()?.getBoundingClientRect().height || 875;
-    console.log('Container Width:', containerWidth, 'Container Height:', containerHeight);  // Debug log for container size
     this.projection.scale(containerWidth / 6).translate([containerWidth, containerHeight]);
 
     const containerWidth2 = this.svg2.node()?.getBoundingClientRect().width || 2000;
@@ -60,6 +59,7 @@ export class MapsComponent {
       .attr('width', '100%')
       .attr('height', '100%')
       .attr('viewBox', '0 0 2000 875')
+      .attr('transform', 'translate(-200, 0)')
       .attr('preserveAspectRatio', 'xMidYMid meet');
 
     const containerWidth = this.svg.node()?.getBoundingClientRect().width || 2000;
@@ -80,7 +80,8 @@ export class MapsComponent {
       .append('svg')
       .attr('width', '100%')
       .attr('height', '100%')
-      .attr('viewBox', '0 0 2000 875')
+      .attr('viewBox', '0 0 2200 875')
+      .attr('transform', 'translate(-120, 20)')
       .attr('preserveAspectRatio', 'xMidYMid meet');
     const containerWidth2 = this.svg2.node()?.getBoundingClientRect().width || 2000;
     const containerHeight2 = this.svg2.node()?.getBoundingClientRect().height || 875;
